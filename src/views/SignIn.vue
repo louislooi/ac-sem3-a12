@@ -86,13 +86,15 @@ export default {
         });
 
         const { data } = response;
-
+        console.log(response);
         if (data.status !== "success") {
           throw new Error(data.message);
         }
 
         // 將 token 存放在 localStorage 內
         localStorage.setItem("token", data.token);
+
+        this.$store.commit("setCurrentUser", data.user);
 
         // 成功登入後轉址到餐聽首頁
         this.$router.push("/restaurants");

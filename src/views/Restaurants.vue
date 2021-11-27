@@ -31,7 +31,6 @@ import RestaurantCard from "./../components/RestaurantCard";
 import RestaurantsNavPills from "./../components/RestaurantsNavPills.vue";
 import RestaurantsPagination from "./../components/RestaurantsPagination.vue";
 import restaurantsAPI from "./../apis/restaurants";
-
 import { Toast } from "./../utils/helpers";
 
 export default {

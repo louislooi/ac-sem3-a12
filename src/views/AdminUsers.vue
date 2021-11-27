@@ -21,7 +21,7 @@
               type="button"
               class="btn btn-link"
               v-if="user.isAdmin"
-              @click.stop.prevent="setUserAdmin(user.id)"
+              @click.stop.prevent="toggleUserRole(user.id, user.isAdmin)"
             >
               set as user
             </button>
@@ -29,7 +29,7 @@
               type="button"
               class="btn btn-link"
               v-else
-              @click.stop.prevent="setUserAdmin(user.id)"
+              @click.stop.prevent="toggleUserRole(user.id, user.isAdmin)"
             >
               set as admin
             </button>
@@ -42,42 +42,10 @@
 
 <script>
 import AdminNav from "./../components/AdminNav";
-
-const dummyData = {
-  users: [
-    {
-      id: 1,
-      name: "root",
-      email: "root@example.com",
-      password: "$2a$10$CEiIaYyaDuxsQWl1MULL7.2qX4QT7vhtIhuNtjsm.Rt0ajYRDBMa.",
-      isAdmin: true,
-      image: null,
-      createdAt: "2021-11-09T12:50:29.000Z",
-      updatedAt: "2021-11-09T12:50:29.000Z",
-    },
-    {
-      id: 2,
-      name: "user1",
-      email: "user1@example.com",
-      password: "$2a$10$OtQw6A2LBl8jByPWrok2C.TROAr9sOD.PCkb17WcaeaSbRWxHtDJ6",
-      isAdmin: false,
-      image: null,
-      createdAt: "2021-11-09T12:50:29.000Z",
-      updatedAt: "2021-11-09T12:50:29.000Z",
-    },
-    {
-      id: 3,
-      name: "user2",
-      email: "user2@example.com",
-      password: "$2a$10$31FAeCAKvDPx2Ob43tpDWeCAPNrxvwUdWlPNBvb.5cAGGzfNVAzhm",
-      isAdmin: false,
-      image: null,
-      createdAt: "2021-11-09T12:50:29.000Z",
-      updatedAt: "2021-11-09T12:50:29.000Z",
-    },
-  ],
-};
-
+import usersAPI from "./../apis/users";
+import adminAPI from "./../apis/admin";
+import { Toast } from "./../utils/helpers";
+import { mapState } from "vuex";
 export default {
   components: {
     AdminNav,
@@ -90,22 +58,79 @@ export default {
   created() {
     this.fetchUsers();
   },
+  computed: {
+    ...mapState(["currentUser"]),
+  },
   methods: {
-    fetchUsers() {
-      this.users = dummyData.users;
+    async fetchUsers() {
+      try {
+        const { data } = await usersAPI.getUsers();
+        const { users } = data;
+        this.users = users;
+      } catch (error) {
+        console.error(error.message);
+      }
     },
+    async toggleUserRole(userId, isAdmin) {
+      try {
+        console.log(userId, isAdmin);
+        const willBeAdmin = !isAdmin;
+        const { data, statusText } = await adminAPI.users.update({
+          userId,
+          isAdmin: willBeAdmin.toString(),
+        });
 
-    setUserAdmin(userId) {
-      this.users = this.users.map((user) => {
-        if (user.id === userId) {
+        console.log(this.userId, this.isAdmin);
+        if (statusText !== "OK" || data.status !== "success") {
+          throw new Error(statusText);
+        }
+        this.users = this.users.map((user) => {
+          if (user.id !== userId) {
+            return user;
+          }
           return {
             ...user,
-            isAdmin: !user.isAdmin,
+            isAdmin: willBeAdmin,
           };
-        }
-        return user;
-      });
+        });
+      } catch (error) {
+        Toast.fire({
+          type: "error",
+          title: "無法更新會員角色，請稍後再試",
+        });
+      }
     },
+    // async setUserAdmin(userId) {
+    //   try {
+    //     const { data } = await adminAPI.users.update({ userId });
+    //     console.log(data);
+    //     this.users = this.users.map((user) => {
+    //       if (user.id === userId) {
+    //         return {
+    //           ...user,
+    //           isAdmin: !user.isAdmin,
+    //         };
+    //       }
+    //       return user;
+    //     });
+    //   } catch (error) {
+    //     Toast.fire({
+    //       type: "error",
+    //       title: "無法更新會員角色，請稍後再試",
+    //     });
+    //   }
+    //   // setUserAdmin(userId) {
+    //   //   this.users = this.users.map((user) => {
+    //   //     if (user.id === userId) {
+    //   //       return {
+    //   //         ...user,
+    //   //         isAdmin: !user.isAdmin,
+    //   //       };
+    //   //     }
+    //   //     return user;
+    //   //   });
+    //   // },
+    // },
   },
 };
 </script>

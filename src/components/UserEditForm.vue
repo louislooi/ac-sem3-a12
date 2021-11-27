@@ -39,7 +39,7 @@
 <script>
 export default {
   props: {
-    initialProfile: {
+    initialCurrentUser: {
       type: Object,
       default: () => ({
         id: -1,
@@ -58,7 +58,16 @@ export default {
     };
   },
   created() {
-    this.profile = { ...this.profile, ...this.initialProfile };
+    this.profile = { ...this.profile, ...this.initialCurrentUser };
+    console.log(this.profile);
+  },
+  watch: {
+    initialCurrentUser(newValue) {
+      this.profile = {
+        ...this.profile,
+        ...newValue,
+      };
+    },
   },
   methods: {
     handleFileChange(e) {

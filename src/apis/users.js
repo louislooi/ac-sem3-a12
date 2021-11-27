@@ -2,6 +2,30 @@
 const getToken = () => localStorage.getItem("token");
 
 export default {
+  getUsers() {
+    return apiHelper.get(`/admin/users`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+  },
+  update({ id, formData }) {
+    return apiHelper.put(
+      `/users/${id}`,
+      { formData },
+      {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      }
+    );
+  },
+  getCurrentUser() {
+    return apiHelper.get(`/get_current_user`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+  },
+  get({ userId }) {
+    return apiHelper.get(`/users/${userId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+  },
   addFavorite({ restaurantId }) {
     return apiHelper.post(`/favorite/${restaurantId}`, null, {
       headers: { Authorization: `Bearer ${getToken()}` },
@@ -34,6 +58,20 @@ export default {
   },
   deleteFollowing({ userId }) {
     return apiHelper.delete(`/following/${userId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+  },
+  addComment({ commentId, restaurantId, text }) {
+    return apiHelper.post(
+      `/comments/`,
+      { commentId, restaurantId, text },
+      {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      }
+    );
+  },
+  deleteComment({ commentId }) {
+    return apiHelper.delete(`/comments/${commentId}`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
   },

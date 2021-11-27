@@ -27,37 +27,53 @@
 
 <script>
 import { fromNowFilter } from "./../utils/mixins";
+import { mapState } from "vuex";
+import userAPI from "./../apis/users";
 
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: "管理者",
-    email: "root@example.com",
-    image: "https://i.pravatar.cc/300",
-    isAdmin: true,
-  },
-  isAuthenticated: true,
-};
+// const dummyUser = {
+//   currentUser: {
+//     id: 1,
+//     name: "管理者",
+//     email: "root@example.com",
+//     image: "https://i.pravatar.cc/300",
+//     isAdmin: true,
+//   },
+//   isAuthenticated: true,
+// };
 
 export default {
   mixins: [fromNowFilter],
-  data() {
-    return {
-      currentUser: dummyUser.currentUser,
-    };
-  },
   props: {
     restaurantComments: {
       type: Array,
       required: true,
     },
   },
+  computed: {
+    ...mapState(["currentUser", "isAuthenticated"]),
+  },
   methods: {
-    handleDeleteButtonClick(commentId) {
-      console.log("handleDeleteButtonClick", commentId);
-      // TODO: 請求 API 伺服器刪除 id 為 commentId 的評論
-      // 觸發父層事件 - $emit( '事件名稱' , 傳遞的資料 )
-      this.$emit("after-delete-comment", commentId);
+    // handleDeleteButtonClick(commentId) {
+    //   console.log("handleDeleteButtonClick", commentId);
+    //   // TODO: 請求 API 伺服器刪除 id 為 commentId 的評論
+    //   // 觸發父層事件 - $emit( '事件名稱' , 傳遞的資料 )
+    //   this.$emit("after-delete-comment", commentId);
+    // },
+    async handleDeleteButtonClick(commentId) {
+      try {
+        const { data } = await userAPI.deleteComment({
+          commentId,
+        });
+
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        // this.restaurantComments = this.restaurantComments.filter(
+        //   (this.restaurantComments = this.restaurantComments.filter())
+        // );
+      } catch (error) {
+        console.error(error.message);
+      }
     },
   },
 };

@@ -14,7 +14,8 @@
 </template>
 
 <script>
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4 } from "uuid";
+import userAPI from "./../apis/users";
 
 export default {
   props: {
@@ -29,15 +30,20 @@ export default {
     };
   },
   methods: {
-    handleSubmit() {
-      // TODO: 向 API 發送 POST 請求
-      // 伺服器新增 Comment 成功後...
-      this.$emit("after-create-comment", {
-        commentId: uuidv4(), // 尚未串接 API 暫時使用隨機的 id
-        restaurantId: this.restaurantId,
-        text: this.text,
-      });
-      this.text = ""; // 將表單內的資料清空
+    async handleSubmit() {
+      try {
+        const { data } = await userAPI.addComment({
+          commentId: uuidv4(),
+          restaurantId: this.restaurantId,
+          text: this.text,
+        });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.text = "";
+      } catch (error) {
+        console.error(error.message);
+      }
     },
   },
 };

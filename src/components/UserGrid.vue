@@ -25,6 +25,7 @@
         追蹤
       </button>
     </p>
+   
   </div>
 </template>
 
@@ -32,6 +33,10 @@
 export default {
   props: {
     initialUsers: {
+      type: Object,
+      required: true,
+    },
+    currentUser: {
       type: Object,
       required: true,
     },

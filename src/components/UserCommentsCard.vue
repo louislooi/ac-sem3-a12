@@ -35,5 +35,13 @@ export default {
       profile: this.initialProfile,
     };
   },
+  watch: {
+    initialProfile(newValue) {
+      this.profile = {
+        ...this.profile,
+        ...newValue,
+      };
+    },
+  },
 };
 </script>

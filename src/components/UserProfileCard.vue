@@ -24,7 +24,7 @@
               <strong>{{ profile.Followers.length }}</strong> followers (追隨者)
             </li>
           </ul>
-          <div v-if="profile.isAdmin">
+          <div v-if="currentUser.id === initialProfile.id">
             <router-link
               :to="{
                 name: 'users-profile-edit',
@@ -40,6 +40,7 @@
               type="button"
               class="btn btn-danger btn-border favorite mr-2"
               v-if="isFollowed"
+              @click.stop.prevent="deleteFollowing(profile.id)"
             >
               移除最愛
             </button>
@@ -47,6 +48,7 @@
               type="button"
               class="btn btn-primary btn-border favorite mr-2"
               v-else
+              @click.stop.prevent="addFollowing(profile.id)"
             >
               加到最愛
             </button>
@@ -58,6 +60,8 @@
 </template>
 
 <script>
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
 export default {
   props: {
     initialProfile: {
@@ -68,19 +72,68 @@ export default {
       type: Boolean,
       require: true,
     },
+    currentUser: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
-      profile: this.initialProfile,
       isFollowed: this.initialIsFollowed,
+      profile: this.initialProfile,
     };
   },
-  methods: {
-    addFollowing() {
-      this.profile = { ...this.profile, isFollowed: true };
+  watch: {
+    initialProfile(newValue) {
+      this.profile = {
+        ...this.profile,
+        ...newValue,
+      };
     },
-    deleteFollowing() {
-      this.profile = { ...this.profile, isFollowed: false };
+    initialIsFollowed(newValue) {
+      this.initialIsFollowed = { ...newValue };
+    },
+  },
+  methods: {
+    async addFollowing(profileId) {
+      try {
+        // STEP 3: 使用撰寫好的 addFavorite 方法去呼叫 API，並取得回傳內容
+        const { data } = await usersAPI.addFollowing({ userId: profileId });
+        console.log(profileId);
+        // STEP 4: 若請求過程有錯，則進到錯誤處理
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+
+        // STEP 5: 請求成功的話，改變 Vue 內的資料狀態
+        this.isFollowed = true;
+        this.initialIsFollowed = true;
+      } catch (error) {
+        // STEP 6: 請求失敗的話則跳出錯誤提示
+
+        Toast.fire({
+          icon: "error",
+          title: "無法將餐廳加入最愛，請稍後再試",
+        });
+        console.log("error", error);
+      }
+    },
+    async deleteFollowing(userId) {
+      try {
+        const { data } = await usersAPI.deleteFollowing({ userId });
+
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.isFollowed = false;
+        // this.profile = { ...this.profile, isFollowed: false };
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法將餐廳移除最愛，請稍後再試",
+        });
+        console.log("error", error);
+      }
     },
   },
 };
